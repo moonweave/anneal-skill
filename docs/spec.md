@@ -1,135 +1,177 @@
 # anneal — design spec
 
-> A user-invoked self-improvement loop for software/agent systems. Given a target,
-> it generates several candidate directions, judges them against a rubric, converges
-> on the best, and iterates that winner to completion — escaping the local-optimum
-> trap of single-track polishing. The user reviews the destination and a decision
-> log, not every step.
+> A user-invoked self-improvement loop for **any** software/agent project that can expose a
+> verifiable signal. Given a target, it cheaply explores several candidate **directions**,
+> picks the best by a direction-fitness oracle, then iterates that winner to completion —
+> escaping the local-optimum trap of single-track polishing. The user reviews the destination
+> and a decision log, not every step.
 
 ## Name
 
-`anneal` — borrowed from simulated annealing: explore broadly, then converge toward a
-global optimum while escaping local minima. It is a **development workflow skill**, not a
-science tool; the name only describes the optimization behavior. Invoked as `/anneal`.
+`anneal` — from simulated annealing: explore broadly, then converge toward a global optimum
+while escaping local minima. It is a **development workflow skill**, not a science tool; the
+name only describes the optimization behavior. Invoked as `/anneal`. (Project lives at
+`~/ai-skills-dev/my-skills/anneal-skill/`, published to `github.com/moonweave/anneal-skill`.)
 
-## The problem it solves
+## Positioning (why this, vs. prior art)
 
-A plain iterate-to-done loop (Ralph-style) keeps improving whatever it started with — so it
-gets stuck in a local optimum (e.g., "a nicer table view") and never *discovers* that a
-different direction (e.g., a graph view) is better. anneal adds an explicit **divergence +
-judging** stage so the loop can change direction on its own evidence, then converge.
+- **Ralph / Smart Ralph**: single-track "iterate one thing until done." Solves *execution*,
+  never changes direction → stuck at the local optimum.
+- **GSD / BMAD / Spec Kit**: spec → multi-agent *execution*. Also single-direction once the
+  spec is fixed.
+- **anneal adds the missing stage on top of these:** cheap **direction discovery + judging**
+  *before* the iterate-to-done loop. The execution half is deliberately the solved part
+  (it can even delegate to GSD/Ralph); anneal's contribution is the direction-search half.
 
-## When to use / when NOT to use
+Justification for skill-hood (vs. a bare saved Workflow): it bundles a reusable protocol +
+default direction-fitness oracle + polish rubric + safety defaults + honest-limit gating that
+a raw script would force every user to re-derive.
 
-**Use when:** the target has (or can be given) a **verifiable oracle** — a test suite,
-linter, type-checker, build, or measurable criterion — so candidates can be scored without
-a human in the loop each round. Good for: building out a bounded system, refactoring toward
-a target, exploring "which architecture/UI direction is best" where direction quality is
-checkable against a rubric.
+## Where it shines vs. struggles (read this before using)
 
-**Do NOT use when:** there is no verifiable signal and success is pure taste or novel product
-direction. The skill states this honestly and refuses to fake convergence. (It can still run
-with a weak oracle, but says so and recommends human checkpoints.)
+The mechanism is only as good as the **direction-fitness oracle** available for the target.
 
-## Core mechanism: diverge → evaluate → converge → loop-until-dry
+- **Sweet spot — hard oracle ranks directions:** performance ("make X faster" → benchmark),
+  correctness ("pass this suite" → tests), coverage, build-size, latency, memory. Here anneal
+  converges cleanly on the genuinely-best direction.
+- **Weak case — direction quality is taste-laden:** UI/visual design. There is no cheap
+  objective signal for "is a graph view a better direction than a table view," so anneal
+  degrades toward whatever the rubric *can* measure (polish), unless the user supplies a
+  **task-based** fitness definition (below). The motivating AgentOps graph-vs-table example is
+  deliberately the *worst* case for the mechanism; treat it as the honest stress test, not the
+  showcase.
 
-Engine = the built-in **`Workflow`** tool (deterministic multi-agent orchestration). The skill
-authors and runs a Workflow script; it does not hand-orchestrate from the main loop.
+## The two oracles (the core design correction)
 
-1. **Diverge.** Generate N candidate directions for the target (e.g., view types, architectures,
-   information structures). Divergence breadth is a parameter — narrow breadth = narrow
-   discovery, so the skill picks ≥3 distinct directions by default and `log()`s them.
-2. **Evaluate (judge panel).** Score each candidate against the rubric with independent judge
-   agents (distinct lenses, not N identical voters). A candidate must win on the rubric, not
-   on the generator's self-assessment.
-3. **Converge.** Select the winner; if a non-incumbent direction wins, switch to it. Iterate
-   the winner toward completion.
-4. **loop-until-dry.** Keep improving the winner until K consecutive rounds find no rubric
-   improvement, or the token budget is hit. Re-run divergence periodically so a late-emerging
-   better direction can still be found.
-5. **Output.** The converged result **plus a decision log** ("why this direction, why these
-   changes" — a REFLECTION). The user reviews this, not every step.
+Conflating these is the failure mode the whole design exists to avoid:
 
-## Critic / rubric model (the distributability crux)
+1. **Direction-fitness oracle** — answers "which *direction* is better." Must be **task-based
+   and measurable**, not an aesthetic of a built artifact. Examples: benchmark delta, test
+   pass-rate, coverage, or for UI, an operationalized task ("steps/clicks to find an orphan
+   node," "can the riskiest item be spotted in one view"). A rough-but-better direction can
+   *win this* even while half-built.
+2. **Polish rubric** — answers "how well is *this artifact* executed": lint, type-check, build,
+   anti-patterns, a11y, style-guide conformance. Used to drive the iterate-to-green loop on the
+   *already-chosen* direction.
 
-The critic is what makes autonomy work, and what makes the skill usable by people other than
-the author. Two-part design:
+**Critical rule:** polish rubric must NOT be used to choose direction. A polished incumbent
+out-scores a rough challenger on polish every time, which would pull the loop back into the
+local optimum. Direction is chosen by oracle #1 only; oracle #2 only refines the winner.
 
-- **Bundled default rubric (works out of the box):** logic oracle (tests pass + lint/typecheck
-  + build green) plus a generic quality heuristic ("does this candidate answer a real question
-  / reduce real complexity, vs. add surface?"). No private dependencies required.
-- **Pluggable rubric (power users):** the user points `/anneal` at a rubric file
-  (`anneal.rubric.md` or a path arg) that adds domain lenses. For UI/frontend targets, the
-  skill **detects** common design references if present (e.g., a web-interface-guidelines file,
-  an accessibility audit via a browser MCP) and uses them as additional judges; otherwise it
-  falls back to the default. Detection is best-effort and never required.
+## Core mechanism: two phases
 
-Rubric entries are scored numerically per lens so the judge panel produces a comparable score
-across candidates.
+Engine = the built-in **`Workflow`** tool. The skill authors and runs a Workflow script; it
+does not hand-orchestrate from the main loop.
 
-## Safety (enforced inside the Workflow script, no settings.json edits required)
+**Phase A — Direction search (cheap, runs once or rarely).**
+1. **Diverge.** Propose K distinct candidate directions and build each as a *lightweight
+   prototype* — just enough to be scored by the direction-fitness oracle, not a full build.
+   `log()` what directions were and were not explored (no silent caps).
+2. **Score.** A judge panel scores each prototype on the **direction-fitness oracle** (oracle #1),
+   distinct lenses per judge. The generator's self-assessment does not count.
+3. **Pick.** Select the winning direction. If a non-incumbent wins, switch to it.
 
-Bundled so installers don't have to touch their harness:
+**Phase B — Iterate winner to completion (the expensive loop).**
+4. Run the iterate-to-green loop (this is the Ralph/GSD-style solved part) on the winning
+   direction, driven by the **polish rubric** (oracle #2): build → test/lint → fix → repeat.
+5. **loop-until-dry:** stop when K consecutive rounds find no rubric improvement, OR max-rounds,
+   OR token budget — whichever first.
 
-- **Token budget cap** — hard ceiling; the loop stops and reports when reached.
-- **Worktree isolation** — parallel candidates run in isolated git worktrees so they cannot
-  clobber each other.
-- **Max-rounds** — bound on total rounds independent of the dry-streak counter.
-- **Human checkpoint** — optional pause at direction-convergence (configurable: destination-only
-  vs. one checkpoint when the winning direction is chosen).
-- Changes land on a feature branch; the user reviews via PR / diff at the destination.
+**Bounded re-divergence (anti-oscillation).** Phase A may re-run at most R times (default low),
+and proposed directions are deduped against the set of **already-seen** directions, not against
+"confirmed/accepted" ones. (Dedup against accepted-only lets rejected directions reappear every
+round and the loop never goes dry — an explicit safeguard, learned from the loop-until-dry
+research.) Re-divergence is for genuinely-new directions only.
+
+**Output:** the converged result **plus a decision log** ("why this direction won, what changed,
+what was rejected and why"). The user reviews this, not every step.
+
+## Cost model & defaults (distributable-tool discipline)
+
+A naive N-directions × judge-panel × many-rounds × worktrees run can be a surprise bill on a
+first `/anneal`. Therefore:
+
+- **Default = cheap mode:** small K (e.g., 2 directions), single judge, low max-rounds, modest
+  budget cap. Reports estimated cost before scaling.
+- **Opt-in scaling:** `--directions N`, `--judges M`, `--max-rounds`, `--budget` raise the
+  ceiling explicitly.
+- The skill `log()`s the cost envelope and refuses to silently exceed the budget cap.
+
+## Critic / rubric model (distributability)
+
+- **Bundled defaults (work out of the box):** a default polish rubric (tests/lint/type/build +
+  a generic "reduces real complexity vs. adds surface" heuristic) and a default direction-fitness
+  prompt that asks the user to name the measurable goal if none is inferable.
+- **Pluggable:** `--rubric <path>` to an `anneal.rubric.md` adding domain lenses; for UI targets
+  the skill best-effort **detects** design references / a browser-a11y MCP if present and adds
+  them as polish judges, else falls back. Detection is never required.
+- Lenses score numerically so candidates are comparable.
+
+## Safety (enforced inside the Workflow script — no settings.json edits required of installers)
+
+- **Token budget cap** (hard), **worktree isolation** for parallel prototypes, **max-rounds**
+  independent of the dry-streak, optional **human checkpoint** at direction-convergence
+  (`--checkpoint direction|destination`, default `destination`). Changes land on a feature
+  branch; the user reviews by PR/diff.
+
+## Judge independence (known limit)
+
+Judges are the same model as the generator → shared priors. Mitigation: distinct lenses per
+judge, and if a second model is configured, route at least one judge to it (cross-model). The
+skill states this limit rather than implying judge votes are independent.
 
 ## Invocation
 
 ```
-/anneal <target>                       # use bundled default rubric
-/anneal <target> --rubric <path>       # pluggable rubric
-/anneal <target> --budget <tokens> --max-rounds <n> --checkpoint direction|destination
+/anneal <target>                                  # cheap default mode, bundled rubric
+/anneal <target> --goal "<measurable fitness>"    # supply direction-fitness when not inferable
+/anneal <target> --rubric <path>                  # pluggable polish rubric
+/anneal <target> --directions N --judges M --max-rounds R --budget <tokens> --checkpoint direction
 ```
 
-`<target>` is a path or a short description of the system to improve. Without a target, the
-skill asks for one (it does not guess).
+`<target>` is a path or short description. Without a target, the skill asks (does not guess).
+If no direction-fitness oracle is inferable and none is supplied, the skill says so and asks
+for a measurable goal rather than faking convergence on polish.
 
 ## Components
 
-- `SKILL.md` — trigger ("Use when …"), invocation contract, the loop protocol, honest limits.
-- Bundled Workflow script (or an inline script template the skill emits) implementing
-  diverge→evaluate→converge→loop-until-dry with the safety wrappers.
-- Default rubric file shipped with the skill.
-- `README.md` — public usage; `LICENSE`; `.gitignore`.
+- `SKILL.md` — trigger ("Use when …"), invocation contract, two-phase protocol, the two-oracle
+  rule, honest sweet-spot/weak-case framing, limits.
+- Bundled Workflow script (or emitted template) implementing Phase A/B + safety wrappers.
+- Default polish rubric + default direction-fitness prompt, shipped with the skill.
+- `README.md`, `LICENSE`, `.gitignore`.
 
-## Human role
+## Self-evaluation (the skill needs its own oracle)
 
-Define the target (and optionally a rubric). Review the **destination + decision log**, not
-every step. Optionally a single direction-convergence checkpoint. This is the "automate the
-work + automate the verification, keep the judgment" split.
+Ship an **eval fixture**: a target with a known-good convergence on a *hard-oracle* axis (e.g.,
+a slow function where a known algorithm is provably fastest), asserting anneal picks that
+direction and reaches the benchmark. This validates the mechanism without relying on taste.
 
 ## Honest limits
 
-- Pure logic converges on "correct"; UI/taste converges on "best per the encoded rubric," not
-  objective best. The skill says so.
+- Logic/perf/coverage targets converge on "correct/best"; taste targets converge on "best per
+  the encoded rubric," not objective best — and need a user-supplied task-based fitness or a
+  human checkpoint. The skill says so up front.
 - Loops are token-heavy; the budget cap is mandatory, not advisory.
-- Divergence breadth bounds discovery: too few candidates → it cannot find a far-better
-  direction. The skill `log()`s what was and wasn't explored (no silent caps).
+- Divergence breadth bounds discovery; the skill logs what was not explored.
+- Judges share model priors (see above).
 
 ## First testbed
 
-AgentOps (`~/AgentOps/`) — the author's cross-tool agent-config dashboard, currently table-centric
-with no test oracle. Expected (not forced) convergence toward a graph view. First anneal round
-on AgentOps should likely build the adapter test oracle (logic scorer) before UI divergence.
-See `~/AgentOps/SELF_IMPROVEMENT_LOOP_SPEC.md` and `DASHBOARD_GRAPH_VIZ_RESEARCH.md`.
-
-## Distribution
-
-Self-contained git repo at `~/ai-skills-dev/my-skills/anneal-skill/`, published to
-`github.com/moonweave/anneal-skill` (mirrors decide-skill / compass-skill).
+AgentOps (`~/AgentOps/`) — author's cross-tool agent-config dashboard, no test oracle yet. This
+is a *weak-case* UI target on purpose. First anneal run there should (a) build the adapter test
+oracle = a hard logic oracle, then (b) for the UI direction, require a task-based fitness
+("steps to find an orphan skill / spot the riskiest hook"). Convergence toward a graph view is a
+hypothesis to be tested by that task-oracle, not a built-in conclusion. See
+`~/AgentOps/SELF_IMPROVEMENT_LOOP_SPEC.md`, `DASHBOARD_GRAPH_VIZ_RESEARCH.md`.
 
 ## Open questions (resolve in writing-plans)
 
-1. Bundled Workflow script as a committed file vs. a template the skill emits each run.
-2. Default-rubric concrete contents and the numeric scoring scheme per lens.
-3. Divergence candidate count default + how directions are proposed (one generator agent vs. a
-   diverse panel).
-4. UI-critic auto-detection: which references/MCPs to probe for, and the fallback rubric.
-5. Re-divergence cadence (every round vs. every K rounds vs. on dry-streak).
-6. Checkpoint default (destination-only vs. direction-convergence).
+1. Lightweight-prototype fidelity: how little can be built and still scored by the direction oracle?
+2. Default direction-fitness prompt: how to elicit a measurable goal from the user when none is inferable.
+3. Bundled Workflow script as committed file vs. emitted template.
+4. Default polish-rubric contents + numeric scoring scheme per lens.
+5. Re-divergence cap R + the seen-set dedup key.
+6. UI-critic auto-detection: which references/MCPs to probe, and the fallback.
+7. Cross-model judge routing: optional dependency or skip if unavailable.
+8. Eval-fixture target choice for self-evaluation.
