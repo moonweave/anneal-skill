@@ -10,8 +10,8 @@
 
 `anneal` — from simulated annealing: explore broadly, then converge toward a global optimum
 while escaping local minima. It is a **development workflow skill**, not a science tool; the
-name only describes the optimization behavior. Invoked as `/anneal`. (Project lives at
-`~/ai-skills-dev/my-skills/anneal-skill/`, published to `github.com/moonweave/anneal-skill`.)
+name only describes the optimization behavior. Invoked as `/anneal`. (Published to
+`github.com/moonweave/anneal-skill`.)
 
 ## Positioning (why this, vs. prior art)
 
@@ -158,12 +158,12 @@ direction and reaches the benchmark. This validates the mechanism without relyin
 
 ## First testbed
 
-AgentOps (`~/AgentOps/`) — author's cross-tool agent-config dashboard, no test oracle yet. This
-is a *weak-case* UI target on purpose. First anneal run there should (a) build the adapter test
-oracle = a hard logic oracle, then (b) for the UI direction, require a task-based fitness
-("steps to find an orphan skill / spot the riskiest hook"). Convergence toward a graph view is a
-hypothesis to be tested by that task-oracle, not a built-in conclusion. See
-`~/AgentOps/SELF_IMPROVEMENT_LOOP_SPEC.md`, `DASHBOARD_GRAPH_VIZ_RESEARCH.md`.
+The first real-world target is deliberately a *weak-case* UI dashboard with no test oracle yet —
+the honest stress test, not the showcase. A first anneal run there should (a) build a hard logic
+oracle (e.g. an adapter test suite) for the parts that admit one, then (b) for the UI direction,
+require a task-based fitness ("steps to find an orphan item / spot the riskiest entry").
+A conclusion like "a graph view beats a table" is a hypothesis to be tested by that task-oracle,
+not a built-in assumption.
 
 ## Open questions (resolve in writing-plans)
 
