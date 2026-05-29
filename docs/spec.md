@@ -37,7 +37,7 @@ The mechanism is only as good as the **direction-fitness oracle** available for 
 - **Weak case — direction quality is taste-laden:** UI/visual design. There is no cheap
   objective signal for "is a graph view a better direction than a table view," so anneal
   degrades toward whatever the rubric *can* measure (polish), unless the user supplies a
-  **task-based** fitness definition (below). The motivating AgentOps graph-vs-table example is
+  **task-based** fitness definition (below). The motivating graph-vs-table dashboard example is
   deliberately the *worst* case for the mechanism; treat it as the honest stress test, not the
   showcase.
 
