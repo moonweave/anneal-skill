@@ -72,11 +72,11 @@ while (dry < DRY_STREAK && round < MAX_ROUNDS &&
   (RUN_CAP
     ? (budget.spent() - startSpent) < (RUN_CAP - BUDGET_RESERVE_TOKENS)
     : (!budget.total || budget.remaining() > BUDGET_RESERVE_TOKENS))) {
-  round++
   const r = await agent(
     `Improve the "${winner.summary}" implementation of ${a.target}. Run tests/lint/build and apply the POLISH rubric at ${RUBRIC}. This is oracle #2 — refine the ALREADY-CHOSEN winner; do NOT re-choose the direction. Report improved (bool), score, and remaining issues.`,
-    { label: `iterate:${round}`, phase: 'Iterate', isolation: 'worktree', schema: POLISH_SCHEMA })
+    { label: `iterate:${round + 1}`, phase: 'Iterate', isolation: 'worktree', schema: POLISH_SCHEMA })
   if (!r) break
+  round++
   decisionLog.push(`round ${round}: score ${r.score} improved=${r.improved} ${r.remaining ?? ''}`)
   if (r.improved) dry = 0; else dry++
 }
