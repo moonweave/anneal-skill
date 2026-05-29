@@ -9,8 +9,9 @@ prose, not a test harness.
 ## Direction-fitness goal (oracle #1)
 
 - **Signal:** `benchmark()` elapsed seconds, **lower is better**.
-- **Baseline:** the naive O(n²) finder prints ≈1.0s for n=9000 (the value
-  printed by `python3 target.py` is the live baseline).
+- **Baseline:** the naive O(n²) finder at n=9000 takes on the order of a second
+  (≈1–1.4s, machine-dependent). The value printed by `python3 target.py` is the
+  live baseline — use that, not a hardcoded number.
 - **Dogfood goal:** `elapsed < baseline / 5`.
 
 This is a measurable, task-based signal a stopwatch reads directly — exactly the

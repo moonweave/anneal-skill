@@ -1,99 +1,129 @@
 # anneal
 
-A Claude Code skill that drives an oracle-bearing project through a **diverge → pick-best-direction → iterate-to-green** loop, escaping the local-optimum trap of single-track polishing. Named after simulated annealing: explore broadly, then converge.
+> A Claude Code skill that explores several directions, **picks the best by a measurable oracle**, then iterates only the winner to done — so your agent stops polishing its first idea into a local optimum.
 
-## Why
-
-The default way an agent improves something is to keep polishing one approach. That hill-climbs into a local optimum — the current direction gets shinier, but a genuinely better direction is never tried because the first step away from the incumbent looks worse.
-
-`anneal` separates two questions that polishing conflates, and keeps them strictly apart:
-
-1. **Direction-fitness** — *which direction is better?* Answered by a **task-based, measurable** oracle (benchmark delta, test pass-rate, coverage; for UI, an operationalized task such as "clicks to find an orphan node"). A rough-but-better direction can win this even while half-built.
-2. **Polish** — *how well is this artifact executed?* Answered by a rubric over lint, type, build, complexity. This drives the iterate-to-green loop on the *already-chosen* direction.
-
-**The polish rubric must never choose direction.** A polished incumbent out-scores a rough challenger on polish every time, so using polish to pick direction pulls the loop straight back into the local optimum. Direction is chosen by the fitness oracle alone; the polish rubric only refines the winner.
-
-## Install
-
-Clone into your Claude Code skills directory:
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Claude Code skill](https://img.shields.io/badge/Claude%20Code-skill-8A63D2)
+![status: early](https://img.shields.io/badge/status-early-orange)
 
 ```
-mkdir -p ~/.claude/skills/anneal
-cp -r anneal-skill/* ~/.claude/skills/anneal/
+/anneal ./src/parser --goal "test suite pass-rate"
+/anneal ./bench.py   --goal "elapsed seconds, lower is better"
 ```
 
-Once published to a plugin marketplace, it will also be installable with `/plugin`.
+---
 
-## Usage
+## The problem
 
-```
-/anneal <target>                                  # cheap default: K=2 directions, 1 judge, bundled rubric
-/anneal <target> --goal "<measurable fitness>"    # supply direction-fitness when not inferable
-/anneal <target> --rubric <path>                  # pluggable polish rubric
-/anneal <target> --directions N --judges M --max-rounds R --budget <tokens> --checkpoint direction
-```
+AI coding loops are good at *executing* — take one direction and grind it to "done." Ralph iterates a single thread until it passes. GSD / Spec Kit turn a spec into multi-agent execution. They're effective, and they're **single-track**: once a direction is chosen, it never changes.
 
-`<target>` is a path or a short description. Without a target, the skill asks. If no direction-fitness oracle is inferable and none is supplied, the skill asks for a measurable goal rather than faking convergence on polish.
+That's the local-optimum trap. The agent refines its *first* idea — the obvious nested-loop tweak, the table view, the regex it already wrote — and never asks *"is this even the right direction?"* A polished wrong direction beats a rough right one on every quality check, so the loop digs deeper into the wrong hole.
 
-### Examples
+## What anneal does
 
-```
-/anneal ./src/parser --goal "csv-bench rows/sec, higher is better"
-/anneal "the graph layout component" --goal "clicks to find an orphan node, fewer is better" --checkpoint direction
-/anneal ./solver --directions 4 --judges 2 --max-rounds 6 --budget 400000
-```
+anneal adds the stage those tools skip: **cheap direction discovery and judging, before the iterate-to-done loop.** On `/anneal <target>` it:
 
-## How it works
+1. **Diverges** — proposes K distinct candidate directions.
+2. **Prototypes cheaply** — builds each just enough to *measure* it, in an isolated worktree.
+3. **Picks by measurement** — ranks directions by a **direction-fitness oracle** (a real, measurable goal — not taste), and selects the winner.
+4. **Iterates the winner to green** — runs the expensive loop on the chosen direction only, driven by a **polish rubric**.
 
-Two phases, two oracles.
+The execution half (step 4) is the already-solved part — the kind of grind Ralph and GSD do well. anneal's contribution is the **direction-search half** that comes first.
 
-**Phase A — direction search.** Propose K (default 2) distinct directions. Build a cheap prototype of each — just enough to score it under the **direction-fitness oracle**. Rank by fitness only. Pick the winner.
+## The core idea: two oracles, never mixed
 
-**Phase B — iterate to green.** Take the winning direction and loop it against the **polish rubric**. Stop on whichever comes first: two consecutive rounds with no improvement (loop-until-dry), max-rounds, or the token budget.
+This is the one rule the whole skill exists to enforce:
 
-## Behavior summary
-
-| Aspect | Phase A (direction search) | Phase B (iterate to green) |
+| Oracle | Question it answers | When it runs |
 |---|---|---|
-| Question answered | Which direction is better? | How well is this executed? |
-| Oracle | Direction-fitness (task-based, measurable) | Polish rubric (lint, type, build, complexity) |
-| Artifacts | Cheap prototypes per direction | The chosen direction, refined |
-| Picks direction? | Yes — solely | Never |
-| Stop condition | All K directions scored, winner chosen | 2 dry rounds, max-rounds, or budget |
+| **Direction-fitness** | *Which direction is better?* — measurable, task-based (benchmark, pass-rate, coverage, "clicks to find X") | Phase A, to pick the winner |
+| **Polish rubric** | *How well is this one executed?* — tests, lint, build, complexity | Phase B, to refine the winner |
 
-## Sweet spot vs weak case
+**The polish rubric must never choose direction.** A polished incumbent out-scores a rough challenger on polish every time — letting polish pick direction is exactly what pulls the loop back into the local optimum. Direction is chosen by the measurable oracle alone; polish only refines what's already been chosen.
+
+## When it shines — and when it struggles
+
+The mechanism is only as good as the direction-fitness oracle you can give it.
 
 | | Sweet spot | Weak case |
 |---|---|---|
-| **Target** | A hard oracle ranks directions | Taste-laden directions |
-| **Examples** | performance → benchmark, correctness → tests, coverage, build-size, latency, memory | UI / visual design, "make it feel nicer" |
-| **Signal** | Cheap, objective fitness per direction | No cheap objective signal |
-| **Result** | Converges on the genuinely best direction | Degrades toward whatever the rubric can measure (polish) — unless you supply a task-based fitness definition |
+| **Signal** | A hard, measurable oracle ranks directions | Direction quality is taste-laden |
+| **Examples** | "make it faster" → benchmark; "pass this suite" → tests; coverage, bundle size, p95 latency, memory | UI / visual design ("is a graph view better than a table?") |
+| **Result** | Converges on the genuinely-best direction | Degrades toward whatever the rubric *can* measure — unless you supply a **task-based** fitness ("steps to find an orphan node") or use the human checkpoint |
 
-For taste-laden targets, pass `--goal` with an operationalized task ("clicks to complete", "time to locate X") or use `--checkpoint direction` to put a human in the loop before Phase B.
+If no measurable goal is inferable and you don't supply one, anneal asks for it rather than faking convergence on polish.
+
+## Quick start
+
+Install as a user skill:
+
+```bash
+mkdir -p ~/.claude/skills/anneal
+cp -R SKILL.md workflow rubrics ~/.claude/skills/anneal/
+```
+
+The skill auto-loads in any new Claude Code session; verify it appears in `/help`. (Once published to a plugin marketplace, it will also be installable with `/plugin`.)
+
+Then invoke it:
+
+```
+/anneal <target>                                  # cheap default: 2 directions, ranked by measurement (no separate judge)
+/anneal <target> --goal "<measurable fitness>"    # supply the direction-fitness goal
+/anneal <target> --rubric <path>                  # plug in a custom polish rubric
+/anneal <target> --directions N --judges M --max-rounds R --budget <tokens> --checkpoint direction
+```
+
+`<target>` is a path or a short description. Without one, the skill asks rather than guessing.
+
+## How it works
+
+**Phase A — direction search (cheap, once).** Propose K directions → build a lightweight prototype of each in its own worktree → measure each against the goal → pick the highest-fitness winner. Logs what was and wasn't explored.
+
+**Phase B — iterate to green (the expensive loop).** Run build → test/lint → fix on the winner, scored by the polish rubric. Stops when two consecutive rounds find no improvement, or at `--max-rounds`, or when the token budget runs out — whichever comes first.
+
+| | Phase A — Direction search | Phase B — Iterate |
+|---|---|---|
+| Oracle | Direction-fitness (measurable) | Polish rubric |
+| Picks direction? | **Yes — solely** | **Never** |
+| Cost | Cheap prototypes | The real investment |
+| Output | Winner + rejected directions, with evidence | Converged result + decision log |
+
+The user reviews the **destination** and a decision log ("why this direction won, what was rejected and why"), not every step. Changes land on a branch; you review by diff.
+
+## vs. prior art
+
+| | Solves | Changes direction? |
+|---|---|---|
+| **Ralph / Smart Ralph** | Execution — iterate one thread to done | No (single track) |
+| **GSD / BMAD / Spec Kit** | Spec → multi-agent execution | No (fixed once the spec is set) |
+| **anneal** | The stage *before* execution: discover + judge directions, then iterate the winner | **Yes — that is the point** |
+
+anneal is additive — it front-loads the direction choice those tools assume has already been made.
 
 ## Design principles
 
 1. **Two oracles, kept apart.** Direction-fitness and polish answer different questions and are never mixed.
-2. **Polish never picks direction.** This is the rule that prevents the local-optimum collapse.
+2. **Polish never picks direction.** The rule that prevents the local-optimum collapse.
 3. **Fitness must be measurable.** No measurable goal, no honest convergence — the skill asks rather than faking it on polish.
 4. **Cheap prototypes for the search.** Build only enough of each direction to score it; the winner gets the real investment.
 5. **Bounded loops.** The token budget is a hard cap, not advice. Loops stop when dry, capped, or out of budget.
 
-## What it doesn't do
+## Honest limits
 
-- It does not converge on objective best for taste targets. Logic, performance, and coverage converge on the best direction; taste targets converge on "best per the encoded rubric" and need user-supplied task-based fitness or a human checkpoint.
-- It does not run free. Loops are token-heavy; the budget cap is mandatory.
-- It does not explore exhaustively. Divergence breadth bounds discovery — it logs what it did not explore.
-- It does not give you a truly independent referee. Judges share the generator's model priors.
-- It does not keep agents on a narrow target inside a rich repo. When the target sits in a project full of other interesting files, the worktree agents can broaden scope and "improve" the surrounding code instead. Isolate the target or scope the goal tightly ("optimize only this file").
-- It does not degrade gracefully if a sub-agent fails to finalize. The run aborts if any prototype or iterate agent finishes without emitting its structured result — re-run if that happens.
+- It does **not** converge on objective best for taste targets — only "best per the encoded rubric." Those need a user-supplied task-based fitness or the `--checkpoint direction` human gate.
+- It is **not** free. Loops are token-heavy; the budget cap is mandatory, and a budget under ~50k tokens leaves no room to iterate.
+- It does **not** explore exhaustively. Divergence breadth bounds discovery — it logs what it did not explore.
+- It does **not** give you a truly independent referee. Judges share the generator's model priors.
+- It can **broaden scope inside a rich repo.** When the target sits among other tempting files, worktree agents may "improve" the surroundings instead — isolate the target or scope the goal tightly ("optimize only this file").
+- It does **not** degrade gracefully if a sub-agent fails to finalize — the run aborts; re-run if that happens.
+
+## Self-eval fixture
+
+`eval/dup-finder/` is the skill's own hard-oracle test fixture: a deliberately naive O(n²) duplicate finder where the O(n) hash-set rewrite is provably far faster. `python3 eval/dup-finder/target.py` prints the baseline; `eval/dup-finder/expected.md` states the convergence the engine should reach — pick the O(n) direction by measured elapsed (not by polishing the O(n²) incumbent) and drive it under `baseline/5`. A fully hands-off end-to-end run depends on the host's multi-agent and git-worktree support.
 
 ## Status
 
-Early. The two-oracle framing and the loop are the stable core; flags and defaults may move.
-
-The `eval/dup-finder/` fixture is the skill's own hard-oracle test. It ships a deliberately naive O(n²) duplicate finder; `python3 eval/dup-finder/target.py` prints its baseline (≈1–1.4s, machine-dependent), and the O(n) hash-set rewrite is provably far faster (sub-millisecond at this input size). `eval/dup-finder/expected.md` states the convergence the engine should reach: pick the O(n) direction by measured elapsed — not by polishing the O(n²) incumbent — and drive it under `baseline/5`. A fully hands-off end-to-end run depends on the host's multi-agent and git-worktree support; if a sub-agent fails to finalize or the target sits in a rich repo, a re-run or tighter goal scoping may be needed (see limits above).
+Early. The two-oracle framing and the loop are the stable core; flags and defaults may move. Re-divergence (re-running the search) is intentionally deferred to a later version — v1 picks once, so there is no oscillation risk by construction.
 
 ## License
 
