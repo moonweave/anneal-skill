@@ -1,8 +1,10 @@
 # Default polish rubric (oracle #2)
 
-Scores **how well an *already-chosen* artifact is executed** during Phase B (iterate-to-green) on the single winning direction.
+Scores **how well an *already-chosen* artifact is executed** when you iterate the winning direction to done (step 5 of the discipline).
 
-**This rubric is never used to pick direction.** Direction is ranked and chosen in Phase A by the direction-fitness oracle alone (`default.direction-fitness.md`). A polished incumbent out-scores a rough challenger on polish every time, so using polish to choose direction would pull the loop straight back into the local optimum — the exact failure this skill exists to prevent. Polish only refines the winner; it does not select it.
+**This rubric is never used to pick — or eliminate — a direction.** Direction is ranked and chosen by the direction-fitness oracle alone (`default.direction-fitness.md`). A polished incumbent out-scores a rough challenger on polish every time, so using polish to choose direction pulls you straight back into the local optimum — the exact failure this skill exists to prevent.
+
+**Corollary (learned the hard way): a *fixable* hygiene issue must not knock the substantively-best candidate out of contention.** If the best-on-substance option fails a lint/a11y/style check that is routine to fix, *remediate it and then compare* — never let an eligibility gate hand the win to a worse-but-cleaner option. Polish refines the winner; it does not select it and it does not disqualify it.
 
 ## Lenses
 
@@ -19,4 +21,4 @@ Each lens scores `0-3` unless noted.
 
 ## Combining
 
-Score = sum of the four lenses, **except** `tests = 0` is an overriding gate: a failing test suite blocks acceptance no matter how high the total. The loop stops when no lens improves across **2 consecutive rounds** (loop-until-dry); the workflow enforces this alongside max-rounds and the budget cap.
+Score = sum of the four lenses, **except** `tests = 0` is an overriding gate *for the final winning artifact*: you don't ship a chosen direction whose tests fail. (This gate applies to finishing the winner — not to comparing direction candidates, where fixable failures are remediated first per the corollary above.) Stop iterating when no lens improves across **2 consecutive rounds**, or once it's good enough — keep it cheap.

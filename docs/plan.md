@@ -1,5 +1,10 @@
 # anneal skill — Implementation Plan
 
+> **⚠️ Superseded — historical build record.** This plan built the original heavyweight
+> Workflow-engine version. That engine was later removed in favor of a lightweight measure-first
+> discipline (see `SKILL.md` / `README.md`). Kept for history; the task list below describes
+> components that no longer ship (`workflow/`, the multi-agent run, the flags).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax.
 
 **Goal:** Build `anneal`, a distributable Claude Code skill that runs any oracle-bearing project through a diverge→pick-best-direction→iterate-to-green loop, published to `github.com/moonweave/anneal-skill`.

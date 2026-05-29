@@ -1,6 +1,6 @@
 # Default direction-fitness oracle (oracle #1)
 
-Defines the **measurable, task-based** signal that **ranks directions** in Phase A. This is oracle #1, separate from the polish rubric (`default.polish.md`): it ranks *which direction is better*, not how polished any one artifact is. A rough-but-better direction can win this fitness while still half-built.
+Defines the **measurable, task-based** signal that **ranks directions**. This is oracle #1, separate from the polish rubric (`default.polish.md`): it ranks *which direction is better*, not how polished any one artifact is. A rough-but-better direction can win this fitness while still half-built.
 
 **The goal must be measurable and task-based** — a number (or a yes/no on an operationalized task), not "looks better" or "feels cleaner." If you cannot phrase it as something a script or a stopwatch could measure, it is not a direction-fitness goal.
 
@@ -18,14 +18,14 @@ Defines the **measurable, task-based** signal that **ranks directions** in Phase
 
 UI/visual is the hard case because there is no native objective number — you must *operationalize* the goal into a task with a countable outcome. Without that operationalization, a UI target has no direction-fitness signal.
 
-## How to supply it
+## How to get it
 
-1. **Infer** from the target if a measurable goal is evident (e.g. an existing benchmark or test suite).
-2. Else pass it explicitly: `--goal "<measurable fitness>"`.
-3. Else **ASK the user once** for a measurable goal.
+1. **Infer** it from the target if a measurable goal is evident (an existing benchmark or test suite).
+2. Else **operationalize** it — turn the goal into a task with a countable outcome (see the UI row above).
+3. Else **ask the user once** for a measurable goal.
 
-## Downgrade: polish-only mode (honesty warning)
+## When there is no measurable signal (honesty)
 
-> **Warning.** If no measurable goal is inferable from the target **and** none is supplied, the skill enters **polish-only mode**. Polish-only mode **cannot discover direction** — it has no fitness signal to rank directions with, so it only refines the single existing direction by the polish rubric. It will *not* find a better direction; it can only make the current one cleaner.
+> **Warning.** If you cannot infer, operationalize, or obtain any measurable signal — the target is pure taste — then anneal **cannot rank directions for you.** It degrades to *decision-support*: lay out the candidate options honestly and let the user pick. It will not discover the "best" direction, and it must not fake one by scoring polish.
 
-This downgrade is an explicit warning, never a silent fallback. The skill states that it has dropped to polish-only mode so direction-discovery is never faked using the polish rubric.
+Say this out loud rather than silently substituting polish for fitness.

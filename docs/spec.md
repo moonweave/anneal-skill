@@ -1,5 +1,11 @@
 # anneal — design spec
 
+> **⚠️ Superseded — historical design record.** This spec describes the original *heavyweight
+> multi-agent + git-worktree engine*. That engine was removed: review showed it cost ~10× the
+> tokens, added failure modes, and didn't beat just prompting a capable agent well. anneal is now
+> a **lightweight measure-first discipline** — see `SKILL.md` and `README.md`. Kept here for the
+> design rationale and the two-oracle reasoning, which carried over.
+
 > A user-invoked self-improvement loop for **any** software/agent project that can expose a
 > verifiable signal. Given a target, it cheaply explores several candidate **directions**,
 > picks the best by a direction-fitness oracle, then iterates that winner to completion —
