@@ -118,6 +118,8 @@ State these to the user when relevant; do not oversell convergence.
 3. **Divergence breadth bounds discovery.** Only the K proposed directions are explored; the run logs what was and was not explored. Raising `--directions` widens the search at linear cost.
 4. **Judges share the generator's model priors.** They are not independent evidence; distinct framing helps but does not remove shared bias. More judges reduce variance, not shared error.
 5. **checkpoint=direction re-runs direction search on approval** (re-divergence caveat, §4). It may re-confirm or rarely differ; the diff is the safety net.
+6. **Agents can broaden scope inside a rich repo.** When the target sits in a project with other tempting files, the worktree agents may improve the surrounding code rather than the target. Isolate the target or scope the goal tightly (e.g. "optimize only this file; do not touch anything else").
+7. **A non-finalizing sub-agent aborts the run.** If any prototype or iterate agent finishes without emitting its structured result, the whole run errors (no graceful degradation). Re-run if it happens.
 
 ## 7. Error handling
 

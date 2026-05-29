@@ -86,10 +86,14 @@ For taste-laden targets, pass `--goal` with an operationalized task ("clicks to 
 - It does not run free. Loops are token-heavy; the budget cap is mandatory.
 - It does not explore exhaustively. Divergence breadth bounds discovery — it logs what it did not explore.
 - It does not give you a truly independent referee. Judges share the generator's model priors.
+- It does not keep agents on a narrow target inside a rich repo. When the target sits in a project full of other interesting files, the worktree agents can broaden scope and "improve" the surrounding code instead. Isolate the target or scope the goal tightly ("optimize only this file").
+- It does not degrade gracefully if a sub-agent fails to finalize. The run aborts if any prototype or iterate agent finishes without emitting its structured result — re-run if that happens.
 
 ## Status
 
 Early. The two-oracle framing and the loop are the stable core; flags and defaults may move.
+
+The mechanism is exercised by the `eval/dup-finder/` fixture (see `eval/dup-finder/expected.md`): the engine proposes directions, builds each as a worktree-isolated prototype, and measures the hard oracle — the O(n) hash-set rewrite benchmarks far faster than the naive O(n²) baseline (~1.0s → ~0.0005s in a sample run), and direction selection ranks by that measured fitness. A fully hands-off end-to-end run depends on the host's multi-agent and git-worktree support; if a sub-agent fails to finalize or the target sits in a rich repo, a re-run or tighter goal scoping may be needed (see limits above).
 
 ## License
 
