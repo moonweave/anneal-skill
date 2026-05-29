@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="940" viewBox="0 0 980 940" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <radialGradient id="bg2" cx="50%" cy="30%" r="90%">
+      <stop offset="0" stop-color="#161b22"/>
+      <stop offset="1" stop-color="#0d1117"/>
+    </radialGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect width="980" height="940" fill="url(#bg2)"/>
+
+  <!-- input -->
+  <rect x="370" y="26" width="240" height="48" rx="10" fill="#1c2230" stroke="#3b4252" stroke-width="1.5"/>
+  <text x="490" y="56" text-anchor="middle" font-size="22" fill="#e6edf3" font-family="Menlo,'Courier New',monospace">target + goal</text>
+  <line x1="490" y1="74" x2="490" y2="106" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ PHASE A ============ -->
+  <rect x="64" y="112" width="852" height="336" rx="16" fill="#11161e" stroke="#f59e0b" stroke-opacity="0.45" stroke-width="1.5"/>
+  <text x="96" y="156" font-size="22" font-weight="700" fill="#f59e0b" letter-spacing="1.5">PHASE A · DIRECTION SEARCH</text>
+  <text x="96" y="184" font-size="18" fill="#9aa4b2">Diverge K candidate directions, prototype each cheaply, measure — pick the winner.</text>
+
+  <!-- diverge -> directions -->
+  <text x="96" y="252" font-size="18" fill="#c9d1d9" font-weight="600">diverge</text>
+  <line x1="176" y1="247" x2="232" y2="247" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="240" y="220" width="120" height="38" rx="8" fill="#1a212c" stroke="#f59e0b" stroke-opacity="0.5"/>
+    <text x="300" y="244" text-anchor="middle" font-size="16" fill="#e6edf3">direction A</text>
+    <rect x="240" y="266" width="120" height="38" rx="8" fill="#1a212c" stroke="#f59e0b" stroke-opacity="0.5"/>
+    <text x="300" y="290" text-anchor="middle" font-size="16" fill="#e6edf3">direction B</text>
+    <rect x="240" y="312" width="120" height="38" rx="8" fill="#1a212c" stroke="#f59e0b" stroke-opacity="0.35"/>
+    <text x="300" y="336" text-anchor="middle" font-size="16" fill="#9aa4b2">…</text>
+  </g>
+  <line x1="368" y1="285" x2="424" y2="285" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="436" y="278" font-size="17" fill="#c9d1d9">cheap prototype</text>
+  <text x="436" y="302" font-size="15" fill="#9aa4b2">(isolated worktree) → measure</text>
+
+  <!-- oracle 1 -->
+  <rect x="96" y="364" width="600" height="62" rx="10" fill="#1d1606" stroke="#f59e0b" stroke-opacity="0.65" stroke-width="1.5"/>
+  <text x="116" y="390" font-size="17" font-weight="700" fill="#f59e0b">① direction-fitness oracle</text>
+  <text x="116" y="412" font-size="15" fill="#cbb58a">measurable goal (benchmark · pass-rate · coverage) — CHOOSES the direction</text>
+
+  <!-- winner -->
+  <line x1="700" y1="395" x2="744" y2="395" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="752" y="372" width="140" height="46" rx="10" fill="#26340c" stroke="#a3e635" stroke-width="1.5"/>
+  <text x="822" y="401" text-anchor="middle" font-size="17" font-weight="700" fill="#d9f99d">★ winner</text>
+
+  <!-- A -> B -->
+  <line x1="490" y1="448" x2="490" y2="484" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ PHASE B ============ -->
+  <rect x="64" y="490" width="852" height="318" rx="16" fill="#11161e" stroke="#22d3ee" stroke-opacity="0.45" stroke-width="1.5"/>
+  <text x="96" y="534" font-size="22" font-weight="700" fill="#22d3ee" letter-spacing="1.5">PHASE B · ITERATE TO GREEN</text>
+  <text x="96" y="562" font-size="18" fill="#9aa4b2">Run the expensive loop on the winning direction only.</text>
+
+  <!-- loop -->
+  <rect x="96" y="592" width="150" height="44" rx="8" fill="#26340c" stroke="#a3e635" stroke-opacity="0.7"/>
+  <text x="171" y="620" text-anchor="middle" font-size="16" fill="#d9f99d">★ winner</text>
+  <line x1="254" y1="614" x2="298" y2="614" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="306" y="592" width="430" height="44" rx="8" fill="#12222a" stroke="#22d3ee" stroke-opacity="0.5"/>
+  <text x="521" y="620" text-anchor="middle" font-size="17" fill="#e6edf3">build → test / lint → fix &#8635;</text>
+
+  <!-- oracle 2 -->
+  <rect x="96" y="654" width="600" height="62" rx="10" fill="#06181d" stroke="#22d3ee" stroke-opacity="0.65" stroke-width="1.5"/>
+  <text x="116" y="680" font-size="17" font-weight="700" fill="#22d3ee">② polish rubric</text>
+  <text x="116" y="702" font-size="15" fill="#9fd6e0">tests · lint · build · complexity — REFINES the winner, NEVER re-picks direction</text>
+
+  <!-- stop -->
+  <text x="96" y="758" font-size="16" fill="#9aa4b2">stop when: 2 dry rounds &#8226; max-rounds &#8226; out of budget</text>
+
+  <!-- B -> output -->
+  <line x1="490" y1="808" x2="490" y2="844" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- output -->
+  <rect x="316" y="850" width="348" height="48" rx="10" fill="#1c2230" stroke="#3b4252" stroke-width="1.5"/>
+  <text x="490" y="880" text-anchor="middle" font-size="19" fill="#e6edf3">converged result + decision log</text>
+</svg>

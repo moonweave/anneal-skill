@@ -81,6 +81,10 @@ Then invoke it:
 
 ## How it works
 
+<p align="center">
+  <img src="assets/how-it-works.png" alt="anneal pipeline: target + goal flow into Phase A (diverge directions, prototype each cheaply, measure by the direction-fitness oracle, pick the winner), then Phase B (iterate the winner to green by the polish rubric, which never re-picks direction), producing a converged result and decision log" width="78%">
+</p>
+
 **Phase A — direction search (cheap, once).** Propose K directions → build a lightweight prototype of each in its own worktree → measure each against the goal → pick the highest-fitness winner. Logs what was and wasn't explored.
 
 **Phase B — iterate to green (the expensive loop).** Run build → test/lint → fix on the winner, scored by the polish rubric. Stops when two consecutive rounds find no improvement, or at `--max-rounds`, or when the token budget runs out — whichever comes first.
