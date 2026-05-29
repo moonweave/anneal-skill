@@ -15,6 +15,7 @@ const PER_PROTO_BUDGET = a.perPrototypeBudget ?? 40000
 const RUBRIC = a.rubricPath ?? 'rubrics/default.polish.md'
 const DRY_STREAK = 2 // consecutive no-improvement rounds before stopping (README/polish.md: "2 consecutive rounds")
 const BUDGET_RESERVE_TOKENS = 50000 // stop iterating once remaining budget would dip below this reserve
+const RUN_CAP = a.budget ?? null // explicit per-run token cap from --budget; null means fall back to the engine turn budget
 
 const DIRECTIONS_SCHEMA = { type: 'object', properties: { items: { type: 'array', items: {
   type: 'object', properties: { key: { type: 'string' }, summary: { type: 'string' } }, required: ['key', 'summary'] } } }, required: ['items'] }
@@ -66,7 +67,11 @@ const decisionLog = [
   `picked: ${winner.summary} (fitness ${winner.fitness}, evidence: ${winner.evidence})`,
   `rejected: ${scored.slice(1).map(s => `${s.summary} (${s.fitness})`).join(', ') || 'none'}`,
 ]
-while (dry < DRY_STREAK && round < MAX_ROUNDS && (!budget.total || budget.remaining() > BUDGET_RESERVE_TOKENS)) {
+const startSpent = budget.spent() // measure THIS anneal run's spend against RUN_CAP, not the whole turn's
+while (dry < DRY_STREAK && round < MAX_ROUNDS &&
+  (RUN_CAP
+    ? (budget.spent() - startSpent) < (RUN_CAP - BUDGET_RESERVE_TOKENS)
+    : (!budget.total || budget.remaining() > BUDGET_RESERVE_TOKENS))) {
   round++
   const r = await agent(
     `Improve the "${winner.summary}" implementation of ${a.target}. Run tests/lint/build and apply the POLISH rubric at ${RUBRIC}. This is oracle #2 — refine the ALREADY-CHOSEN winner; do NOT re-choose the direction. Report improved (bool), score, and remaining issues.`,
