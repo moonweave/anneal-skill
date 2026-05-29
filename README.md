@@ -76,13 +76,26 @@ It auto-loads in any new Claude Code session; verify it appears in `/help`. Then
 - **No measurable signal ⇒ no real ranking.** For pure-taste targets where even operationalized questions yield no signal, anneal can only lay out options for you to choose; it will not discover the "best" direction, and it must not fake one on polish.
 - **It is a discipline, not a moat.** It encodes a known-good habit so you don't forget it — that's the whole claim. Used where the direction is already obvious, it's just overhead.
 
-## Self-eval
+## A real run — when measurement overturned intuition
 
-`eval/dup-finder/` is a worked example, not a benchmark: a naive O(n²) duplicate finder where the O(n) rewrite is provably far faster. `python3 eval/dup-finder/target.py` prints the baseline; `eval/dup-finder/expected.md` walks the discipline. It is deliberately a **known-answer** case (the O(n) direction is obvious) — useful to illustrate the steps, but note this is exactly the case where you'd *skip* anneal in practice. The discipline earns its keep on the *non-obvious* fork, which by nature has no fixed answer to ship as a test.
+This is the case the discipline is *for*, from an actual multi-round run on a developer-config inventory dashboard (the fork: how to show relationships between skills, tools, and roles).
+
+- **The intuition — and the design note — said "a node-link graph beats a table."** Tempting, and several graph variants got built.
+- **Operationalized fitness:** the goal became five task-questions — *how many clicks to find an orphan? can the single riskiest item be spotted in one view? does it show override-precedence / provide-scope / a cross-tool single point of failure?* Five directions (a refined table + four graph libraries) were each scored against those five questions by two independent critics.
+- **Measurement refuted the intuition.** The refined **table scored 10.0** (perfect); the best **graph scored 6.0** (lowest). The critics independently found *why*: the data is tree-structured (one owner per entity), which a table renders at least as well as a node-link graph. The graph instinct was wrong, and only measurement showed it.
+- **The fixable-DQ corollary, as a real event (not a hypothesis).** An eligibility gate first **disqualified the substantively-best table** on three *fixable* hygiene issues (a stray border accent, em-dashes in prose, six chips that weren't keyboard-operable) and was about to crown the worst-substance graph. Applying the corollary — *remediate the fixable issues, then re-judge* (a one-file, +22/−14 fix) — restored the table as the legitimate winner. Left unchecked, an automated gate hands the win to a worse-but-cleaner option; this is exactly the trap §2's corollary exists to stop.
+
+Takeaway: cheap measurement, applied at the fork, beat a confident wrong intuition — and the two-oracle rule plus the fixable-DQ corollary were both load-bearing on a real decision, not just on paper.
+
+## Self-eval (the simple case)
+
+`eval/dup-finder/` is a tiny worked example for the *steps*, not a benchmark: a naive O(n²) duplicate finder where the O(n) rewrite is provably far faster. `python3 eval/dup-finder/target.py` prints the baseline; `eval/dup-finder/expected.md` walks the discipline. It is deliberately a **known-answer** case (the O(n) direction is obvious) — useful to show the mechanics, but exactly the case where you'd *skip* anneal in practice. The real value lives in the non-obvious fork above.
 
 ## Status
 
 Early, and honest about it. The two-oracle rule and the measure-first habit are the stable core. It is a discipline, not a measured win over just prompting a capable agent well — use it as a habit, not a guarantee.
+
+**Why a skill and not just a tip?** Because the rules get *forgotten*. In the real run above, an automated gate violated the fixable-DQ rule and a human had to catch it — proof the rule isn't self-evident under pressure. Packaging it as an invocable checklist (`/anneal`) carrying concrete scoring rubrics makes it a forcing function at the fork, where a one-line reminder gets skipped. That, plus the narrow niche it serves (measurable signal ∩ non-obvious direction), is the whole justification — and it is a close call: if you'd reliably run these steps from memory, a one-paragraph habit-note would do just as well.
 
 ## License
 
