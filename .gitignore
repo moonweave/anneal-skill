@@ -1,0 +1,10 @@
+.anneal-worktrees/
+node_modules/
+*.log
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+__pycache__/
+*.pyc
