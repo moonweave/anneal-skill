@@ -93,7 +93,7 @@ For taste-laden targets, pass `--goal` with an operationalized task ("clicks to 
 
 Early. The two-oracle framing and the loop are the stable core; flags and defaults may move.
 
-The mechanism is exercised by the `eval/dup-finder/` fixture (see `eval/dup-finder/expected.md`): the engine proposes directions, builds each as a worktree-isolated prototype, and measures the hard oracle — the O(n) hash-set rewrite benchmarks far faster than the naive O(n²) baseline (~1.0s → ~0.0005s in a sample run), and direction selection ranks by that measured fitness. A fully hands-off end-to-end run depends on the host's multi-agent and git-worktree support; if a sub-agent fails to finalize or the target sits in a rich repo, a re-run or tighter goal scoping may be needed (see limits above).
+The `eval/dup-finder/` fixture is the skill's own hard-oracle test. It ships a deliberately naive O(n²) duplicate finder; `python3 eval/dup-finder/target.py` prints its baseline (≈1–1.4s, machine-dependent), and the O(n) hash-set rewrite is provably far faster (sub-millisecond at this input size). `eval/dup-finder/expected.md` states the convergence the engine should reach: pick the O(n) direction by measured elapsed — not by polishing the O(n²) incumbent — and drive it under `baseline/5`. A fully hands-off end-to-end run depends on the host's multi-agent and git-worktree support; if a sub-agent fails to finalize or the target sits in a rich repo, a re-run or tighter goal scoping may be needed (see limits above).
 
 ## License
 
