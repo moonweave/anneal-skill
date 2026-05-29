@@ -131,7 +131,7 @@ anneal is additive — it front-loads the direction choice those tools assume ha
 - It does **not** explore exhaustively. Divergence breadth bounds discovery — it logs what it did not explore.
 - It does **not** give you a truly independent referee. Judges share the generator's model priors.
 - It can **broaden scope inside a rich repo.** When the target sits among other tempting files, worktree agents may "improve" the surroundings instead — isolate the target or scope the goal tightly ("optimize only this file").
-- It does **not** degrade gracefully if a sub-agent fails to finalize — the run aborts; re-run if that happens.
+- It is **fragile by construction — a design cost, not just bad luck.** The heavyweight path (parallel sub-agents in isolated git worktrees) hard-depends on host support for both, with no fallback, and is only *partly* fault-tolerant: a skipped prototype is dropped, but if the proposer or an iterate round fails to emit its structured result, the whole run aborts. More agents → higher odds one fails → the failure surface grows with the very parallelism that is the point. The inline "sketch-measure-pick" baseline (one agent, no worktrees, no cross-agent dependency) pays none of this.
 
 ## Self-eval fixture
 
