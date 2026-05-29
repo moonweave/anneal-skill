@@ -27,9 +27,14 @@ const JUDGE_SCHEMA = { type: 'object', properties: { fitness: { type: 'number' }
 const POLISH_SCHEMA = { type: 'object', properties: { improved: { type: 'boolean' }, score: { type: 'number' }, remaining: { type: 'string' } }, required: ['improved', 'score'] }
 
 phase('DirectionSearch')
-const dirs = await agent(
-  `Propose ${K} DISTINCT candidate directions for improving: ${a.target}. The direction-fitness goal (how a direction will be judged) is: ${a.goal}. Give a one-line summary each. Do NOT build anything yet.`,
-  { schema: DIRECTIONS_SCHEMA })
+let dirs
+try {
+  dirs = await agent(
+    `Propose ${K} DISTINCT candidate directions for improving: ${a.target}. The direction-fitness goal (how a direction will be judged) is: ${a.goal}. Give a one-line summary each. Do NOT build anything yet.`,
+    { schema: DIRECTIONS_SCHEMA })
+} catch (err) {
+  return { error: `direction proposal failed to finalize: ${err}` }
+}
 if (!dirs) return { error: 'no directions proposed' }
 log(`Directions explored (K=${K}): ${dirs.items.map(d => d.summary).join(' | ')}. None beyond these were explored.`)
 
@@ -72,9 +77,15 @@ while (dry < DRY_STREAK && round < MAX_ROUNDS &&
   (RUN_CAP
     ? (budget.spent() - startSpent) < (RUN_CAP - BUDGET_RESERVE_TOKENS)
     : (!budget.total || budget.remaining() > BUDGET_RESERVE_TOKENS))) {
-  const r = await agent(
-    `Improve the "${winner.summary}" implementation of ${a.target}. Run tests/lint/build and apply the POLISH rubric at ${RUBRIC}. This is oracle #2 — refine the ALREADY-CHOSEN winner; do NOT re-choose the direction. Report improved (bool), score, and remaining issues.`,
-    { label: `iterate:${round + 1}`, phase: 'Iterate', isolation: 'worktree', schema: POLISH_SCHEMA })
+  let r
+  try {
+    r = await agent(
+      `Improve the "${winner.summary}" implementation of ${a.target}. Run tests/lint/build and apply the POLISH rubric at ${RUBRIC}. This is oracle #2 — refine the ALREADY-CHOSEN winner; do NOT re-choose the direction. Report improved (bool), score, and remaining issues.`,
+      { label: `iterate:${round + 1}`, phase: 'Iterate', isolation: 'worktree', schema: POLISH_SCHEMA })
+  } catch (err) {
+    decisionLog.push(`round ${round + 1}: iterate agent failed to finalize (${err}) — stopping early, winner from Phase A preserved`)
+    break
+  }
   if (!r) break
   round++
   decisionLog.push(`round ${round}: score ${r.score} improved=${r.improved} ${r.remaining ?? ''}`)
