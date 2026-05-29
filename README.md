@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="anneal — diverge directions, pick the best by a measurable oracle, then iterate the winner to done" width="100%">
+</p>
+
 # anneal
 
 > A Claude Code skill that explores several directions, **picks the best by a measurable oracle**, then iterates only the winner to done — so your agent stops polishing its first idea into a local optimum.

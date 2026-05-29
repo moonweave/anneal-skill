@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="thermal" x1="780" y1="0" x2="1180" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="0.55" stop-color="#34d399"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <radialGradient id="bg" cx="34%" cy="40%" r="85%">
+      <stop offset="0" stop-color="#161b22"/>
+      <stop offset="1" stop-color="#0d1117"/>
+    </radialGradient>
+    <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.85"/>
+      <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+
+  <!-- diverge -> converge motif: K candidate directions fan out (hot), one winner settles (cool) -->
+  <g fill="none" stroke="url(#thermal)" stroke-linecap="round">
+    <path d="M788,150 C968,150 1015,320 1180,320" stroke-width="2.5" opacity="0.40"/>
+    <path d="M788,232 C968,232 1015,320 1180,320" stroke-width="2.5" opacity="0.40"/>
+    <path d="M788,408 C968,408 1015,320 1180,320" stroke-width="2.5" opacity="0.40"/>
+    <path d="M788,490 C968,490 1015,320 1180,320" stroke-width="2.5" opacity="0.40"/>
+    <path d="M788,320 L1180,320" stroke-width="5"/>
+  </g>
+  <g fill="#f59e0b">
+    <circle cx="788" cy="150" r="5" opacity="0.55"/>
+    <circle cx="788" cy="232" r="5" opacity="0.55"/>
+    <circle cx="788" cy="320" r="7.5"/>
+    <circle cx="788" cy="408" r="5" opacity="0.55"/>
+    <circle cx="788" cy="490" r="5" opacity="0.55"/>
+  </g>
+  <circle cx="1180" cy="320" r="62" fill="url(#nodeGlow)"/>
+  <circle cx="1180" cy="320" r="11" fill="#22d3ee"/>
+  <circle cx="1180" cy="320" r="11" fill="none" stroke="#a5f3fc" stroke-width="2"/>
+
+  <!-- command chip -->
+  <rect x="90" y="120" width="166" height="46" rx="9" fill="none" stroke="#30363d" stroke-width="1.5"/>
+  <text x="110" y="151" font-family="Menlo, 'Courier New', monospace" font-size="23" fill="#f59e0b">/anneal</text>
+
+  <!-- wordmark -->
+  <text x="86" y="322" font-size="130" font-weight="700" fill="#f0f3f7" letter-spacing="-2">anneal</text>
+
+  <!-- tagline -->
+  <text x="92" y="386" font-size="27" fill="#9aa4b2">Diverge directions. Pick the best by a</text>
+  <text x="92" y="424" font-size="27" fill="#9aa4b2">measurable oracle. Iterate the winner to done.</text>
+
+  <!-- footer label -->
+  <text x="92" y="512" font-size="20" font-weight="600" fill="#22d3ee" letter-spacing="3">A CLAUDE CODE SKILL</text>
+</svg>
