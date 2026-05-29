@@ -57,6 +57,8 @@ The mechanism is only as good as the direction-fitness oracle you can give it.
 
 If no measurable goal is inferable and you don't supply one, anneal asks for it rather than faking convergence on polish.
 
+**Where it actually earns its overhead.** A measurable oracle is necessary but not sufficient. anneal pays off only when the direction is *also non-obvious* — when the benchmark genuinely has to arbitrate between competing approaches (cache vs. a better algorithm vs. precompute; index vs. denormalize). If the oracle exists *and* the winning approach is already obvious (the dup-finder below: O(n) plainly beats O(n²)), skip anneal and just write it. The real address is the narrow intersection of **measurable oracle ∩ non-obvious direction ∩ cheap-to-prototype** — narrower than "any perf/correctness task."
+
 ## Quick start
 
 Install as a user skill:
@@ -108,6 +110,12 @@ The user reviews the **destination** and a decision log ("why this direction won
 
 anneal is additive — it front-loads the direction choice those tools assume has already been made.
 
+**Be clear about what isn't new.** "Generate several candidates, score each by an objective signal, keep the best, then refine it" is established practice, not an anneal invention: best-of-N with execution-based selection, [AlphaCodium](https://arxiv.org/abs/2401.08500) (diverge → rank by tests → iterate the winner), evolutionary program search where an automatic evaluator picks rather than the model's taste ([AlphaEvolve](https://deepmind.google/blog/alphaevolve-a-gemini-powered-coding-agent-for-designing-advanced-algorithms/)), and the cheap-eval-then-full-budget shape of [Hyperband / successive halving](https://www.jmlr.org/papers/volume18/16-558/16-558.pdf). Parallel attempts are increasingly standard in coding agents, and anneal's own host (Claude Code) already runs parallel subagents in git worktrees natively.
+
+**anneal's actual contribution is small and specific:** it packages one discipline as a reusable, default-bearing skill — *the measurable oracle picks the direction; the polish rubric may never* (a special case of [Goodhart's law](https://en.wikipedia.org/wiki/Goodhart%27s_law)) — so it can't be forgotten mid-loop.
+
+**The honest baseline is one prompt, not a framework.** A single agent told to *"sketch 3 approaches, cheaply measure each, pick by the number, then implement the winner"* captures most of the value inline, at a fraction of the tokens. anneal adds true worktree isolation and *forces* measurement over LLM self-judgment (which is [biased toward its own outputs](https://arxiv.org/abs/2404.13076)) — but whether that's worth roughly an order of magnitude more tokens and the multi-agent fragility is **unproven**: there is no A/B benchmark against that inline baseline yet. Treat anneal as a concept and a discipline, not a measured win.
+
 ## Design principles
 
 1. **Two oracles, kept apart.** Direction-fitness and polish answer different questions and are never mixed.
@@ -127,11 +135,15 @@ anneal is additive — it front-loads the direction choice those tools assume ha
 
 ## Self-eval fixture
 
-`eval/dup-finder/` is the skill's own hard-oracle test fixture: a deliberately naive O(n²) duplicate finder where the O(n) hash-set rewrite is provably far faster. `python3 eval/dup-finder/target.py` prints the baseline; `eval/dup-finder/expected.md` states the convergence the engine should reach — pick the O(n) direction by measured elapsed (not by polishing the O(n²) incumbent) and drive it under `baseline/5`. A fully hands-off end-to-end run depends on the host's multi-agent and git-worktree support.
+`eval/dup-finder/` is the skill's own test fixture: a deliberately naive O(n²) duplicate finder where the O(n) hash-set rewrite is provably far faster. `python3 eval/dup-finder/target.py` prints the baseline; `eval/dup-finder/expected.md` states the convergence the engine should reach — pick the O(n) direction by measured elapsed (not by polishing the O(n²) incumbent) and drive it under `baseline/5`.
+
+Note this is a **sanity check on a known answer**, not a demonstration that anneal is *needed*: the O(n) direction here is obvious, so it verifies the machinery converges where the correct direction is undisputed. The case anneal is actually for — a *non-obvious* direction — is hard to ship as a fixed self-eval precisely because the answer isn't known in advance. A fully hands-off end-to-end run also depends on the host's multi-agent and git-worktree support.
 
 ## Status
 
-Early. The two-oracle framing and the loop are the stable core; flags and defaults may move. Re-divergence (re-running the search) is intentionally deferred to a later version — v1 picks once, so there is no oscillation risk by construction.
+Early, and honest about it. The two-oracle framing and the loop are the stable core; flags and defaults may move. Re-divergence (re-running the search) is intentionally deferred — v1 picks once, so there is no oscillation risk by construction.
+
+**The central value claim is unvalidated.** anneal's advantage over the inline "sketch-measure-pick" baseline above has not been benchmarked, and a clean fully-automated end-to-end run is gated on host multi-agent/worktree support. Use it as a concept and a discipline; if you need a proven win, benchmark it against the inline baseline first.
 
 ## License
 
