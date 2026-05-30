@@ -1,0 +1,85 @@
+{
+  "items": [
+    {
+      "name": "frontend-design",
+      "type": "skill",
+      "owner": "global",
+      "scope": "all projects",
+      "tools": ["browser"],
+      "risk": "medium"
+    },
+    {
+      "name": "repo-review",
+      "type": "skill",
+      "owner": "project",
+      "scope": "current repository",
+      "tools": ["git"],
+      "risk": "low"
+    },
+    {
+      "name": "legacy-deploy",
+      "type": "workflow",
+      "owner": null,
+      "scope": "unknown",
+      "tools": ["ssh"],
+      "risk": "high"
+    },
+    {
+      "name": "browser-auth",
+      "type": "plugin",
+      "owner": "plugin",
+      "scope": "browser sessions",
+      "tools": ["browser", "chrome"],
+      "risk": "high"
+    },
+    {
+      "name": "github-pr-flow",
+      "type": "skill",
+      "owner": "plugin",
+      "scope": "github repositories",
+      "tools": ["github", "git"],
+      "risk": "medium"
+    }
+  ],
+  "overrides": [
+    {
+      "item": "frontend-design",
+      "source": "project",
+      "overrides": "global",
+      "reason": "project design system takes precedence"
+    },
+    {
+      "item": "browser-auth",
+      "source": "plugin",
+      "overrides": "global",
+      "reason": "authenticated browser session required"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "frontend-design",
+      "to": "browser",
+      "type": "uses"
+    },
+    {
+      "from": "browser-auth",
+      "to": "browser",
+      "type": "depends_on"
+    },
+    {
+      "from": "browser-auth",
+      "to": "chrome",
+      "type": "depends_on"
+    },
+    {
+      "from": "github-pr-flow",
+      "to": "github",
+      "type": "uses"
+    },
+    {
+      "from": "github-pr-flow",
+      "to": "git",
+      "type": "uses"
+    }
+  ]
+}

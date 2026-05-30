@@ -4,6 +4,11 @@ Defines the **measurable, task-based** signal that **ranks directions**. This is
 
 **The goal must be measurable and task-based** — a number (or a yes/no on an operationalized task), not "looks better" or "feels cleaner." If you cannot phrase it as something a script or a stopwatch could measure, it is not a direction-fitness goal.
 
+A good direction-fitness oracle also creates an **improvement surface**. The
+score should show which task questions are weak so the next change is concrete:
+"Q2 tool fan-in scored `1 / 2`, so add a shared-tool filter" is useful;
+"this feels less elegant" is not.
+
 ## Examples by target type
 
 | Target type | Example measurable fitness goal |

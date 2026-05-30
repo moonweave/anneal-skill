@@ -33,6 +33,19 @@ A lightweight discipline you run **inline, in one pass** — no multi-agent flee
 
 That's it. It's the disciplined version of *"sketch a few approaches, measure each, pick by the number"* — packaged so the rules are hard to forget.
 
+## Why measurement matters
+
+The value is not just replacing "I like this one" with a score. A good
+direction-fitness table turns an abstract goal into an **improvement surface**:
+which questions are already solved, which are still weak, and what to improve
+next.
+
+For a UI, that means replacing "the table feels better" with "the table wins
+overall, but tool fan-in is only `1 / 2`, so add a tool filter or shared-tool
+highlight." For a backend, it means replacing "this architecture seems cleaner"
+with "latency improved, memory regressed, and the next move is reducing peak
+RSS." The number is useful because it points at the next concrete change.
+
 ## The two oracles — the rule it exists to enforce
 
 | Oracle | Question | When |
@@ -86,6 +99,55 @@ This is the case the discipline is *for*, from an actual multi-round run on a de
 - **The fixable-DQ corollary, as a real event (not a hypothesis).** An eligibility gate first **disqualified the substantively-best table** on three *fixable* hygiene issues (a stray border accent, em-dashes in prose, six chips that weren't keyboard-operable) and was about to crown the worst-substance graph. Applying the corollary — *remediate the fixable issues, then re-judge* (a one-file, +22/−14 fix) — restored the table as the legitimate winner. Left unchecked, an automated gate hands the win to a worse-but-cleaner option; this is exactly the trap §2's corollary exists to stop.
 
 Takeaway: cheap measurement, applied at the fork, beat a confident wrong intuition — and the two-oracle rule plus the fixable-DQ corollary were both load-bearing on a real decision, not just on paper.
+
+## Baseline comparison
+
+The non-obvious-fork fixture packages that run into an auditable case:
+[`eval/non-obvious-fork/`](eval/non-obvious-fork/). In a fresh no-anneal control,
+Claude also picked the table, so this fixture should not be oversold as proof
+that anneal uniquely discovers the winner. Its current value is showing what
+anneal adds when the final answer is the same: explicit fitness questions,
+direction scores, rejected-direction accounting, and a clean separation between
+direction choice and polish.
+
+Same task: choose a UI direction for showing relationships between skills,
+tools, roles, scopes, overrides, and risk.
+
+### Without anneal
+
+A capable first pass can still pick the refined table from the fixture.
+
+Result:
+
+- picks refined table
+- explains that owner, scope, risk, and overrides are mostly item attributes
+- identifies shared tools as the only substantial cross-cutting relationship
+- does not produce a formal direction-fitness table
+- does not score rejected directions on the same task questions
+
+### With /anneal
+
+anneal first operationalizes the goal into five task questions, then scores each
+direction before building deeply.
+
+| Direction | Score |
+|---|---:|
+| Refined table | 9 |
+| Grouped cards | 8 |
+| Node-link graph | 7 |
+| Matrix | 2 |
+
+Result:
+
+- picks refined table
+- rejects graph with an explicit `7 / 10` score after giving it a
+  graph-favorable tool fan-in question
+- keeps polish separate from direction choice
+- treats routine hygiene issues as fixable, not as direction disqualifiers
+
+Takeaway: in this control run, anneal did not change the selected direction. It
+changed the **decision artifact**: the result is auditable, repeatable, and much
+harder to confuse with visual polish.
 
 ## Self-eval (the simple case)
 

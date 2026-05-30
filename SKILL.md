@@ -31,7 +31,7 @@ Run it at a **decision fork where the best approach is not obvious** — and run
 
 There are two different scorers, and conflating them is the failure mode:
 
-1. **Direction-fitness oracle** — answers *"which direction is better?"* It must be **measurable and task-based**: a benchmark number, a test pass-rate, coverage, or for taste targets an operationalized task ("clicks to find an orphan node"). This, and only this, picks the direction.
+1. **Direction-fitness oracle** — answers *"which direction is better?"* It must be **measurable and task-based**: a benchmark number, a test pass-rate, coverage, or for taste targets an operationalized task ("clicks to find an orphan node"). This, and only this, picks the direction. It should also expose an **improvement surface**: the weak rows/questions that tell you what to improve next, not just a vague "good/bad" verdict.
 2. **Polish rubric** — answers *"how well is this one executed?"*: tests, lint, build, complexity. It refines the **already-chosen winner**.
 
 **Polish must never pick or eliminate a direction.** And the sharp corollary, learned the hard way: **a *fixable* hygiene issue must not disqualify the substantively-best candidate.** If the best-on-substance option has a couple of lint/a11y/style violations that are routine to fix, *remediate them and then judge* — do not let an eligibility gate hand the win to a worse-but-cleaner option. (That mistake quietly carries the weakest idea forward; see §4.)
@@ -40,7 +40,7 @@ There are two different scorers, and conflating them is the failure mode:
 
 Do this yourself (or with a single helper) — **do not spin up parallel agents or git worktrees.** The whole point is that it is cheap.
 
-1. **Operationalize the fitness.** Turn the goal into 2–5 concrete, measurable questions. For a perf goal that is one benchmark. For a taste/UI goal, convert it to task-based questions ("how many steps to spot the riskiest item?", "can X be found in one view? y/n"). If you cannot make *any* measurable question, say so — anneal degrades to "show options, you pick," and you should know that up front.
+1. **Operationalize the fitness.** Turn the goal into 2–5 concrete, measurable questions. For a perf goal that is one benchmark. For a taste/UI goal, convert it to task-based questions ("how many steps to spot the riskiest item?", "can X be found in one view? y/n"). Prefer questions whose scores point to a next improvement ("tool fan-in is weak → add shared-tool highlighting"), not just a final taste judgment. If you cannot make *any* measurable question, say so — anneal degrades to "show options, you pick," and you should know that up front.
 2. **Sketch K = 2–3 distinct directions.** Genuinely different approaches, not tweaks of one.
 3. **Prototype each cheaply and MEASURE it.** Build only enough of each to run the measurement; record the actual number per question. Keep prototypes throwaway. Run the measurement — do not estimate, and do not trust a model's self-assessment of which "feels" best.
 4. **Pick by substance, reading the numbers yourself.** The highest measured fitness wins. Hygiene only breaks a near-tie, and only after the fixable issues on the substance leader are remediated (§2). If your intuitive favorite measured worse, pick the faster/better-measured one anyway — that is the entire value.
