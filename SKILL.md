@@ -36,13 +36,27 @@ There are two different scorers, and conflating them is the failure mode:
 
 **Polish must never pick or eliminate a direction.** And the sharp corollary, learned the hard way: **a *fixable* hygiene issue must not disqualify the substantively-best candidate.** If the best-on-substance option has a couple of lint/a11y/style violations that are routine to fix, *remediate them and then judge* — do not let an eligibility gate hand the win to a worse-but-cleaner option. (That mistake quietly carries the weakest idea forward; see §4.)
 
+**Bound "fixable":** mechanical, bounded, and *non-directional* — it does not change the candidate's core approach, data model, interaction model, or API shape, and can be remediated before comparison without invalidating the measured fitness. If the fix changes the approach, it is not a fix — re-measure it as a new candidate.
+
 ## 3. The discipline — run this inline, in one pass
 
 Do this yourself (or with a single helper) — **do not spin up parallel agents or git worktrees.** The whole point is that it is cheap.
 
-1. **Operationalize the fitness.** Turn the goal into 2–5 concrete, measurable questions. For a perf goal that is one benchmark. For a taste/UI goal, convert it to task-based questions ("how many steps to spot the riskiest item?", "can X be found in one view? y/n"). Prefer questions whose scores point to a next improvement ("tool fan-in is weak → add shared-tool highlighting"), not just a final taste judgment. If you cannot make *any* measurable question, say so — anneal degrades to "show options, you pick," and you should know that up front.
+1. **Operationalize the fitness.** Do not start by inventing candidate directions. First turn the fuzzy goal into a *direction-neutral measurement sheet*, following this algorithm — it is the make-or-break step:
+
+   a. **Name the actor and task.** "After this change, what should a user or system be able to DO faster, more correctly, or with less effort?" Use verbs: *find, choose, trace, diagnose, recover, extend, call, compare.* If there is no actor and task, declare pure taste and degrade to "show options, the user picks."
+
+   b. **Extract 2–5 task questions** from that task. Each must be answerable on the *same fixture/input* for every candidate. Bad: "is it cleaner?" Good: "can a new caller add one optional field without editing more than one file?" / "can the user identify the highest-risk item in one view?"
+
+   c. **Give each question one countable outcome:** pass/fail, elapsed time, clicks/steps, files touched, call-site lines, errors produced, p95 latency, memory, bundle size — or a `0/1/2` rubric where `2` = answered directly in one view/run, `1` = answerable but indirect, `0` = not answerable without extra inspection.
+
+   d. **Define worst and ideal before seeing candidates.** Write the scale up front. It must be direction-neutral and must not reward polish, typography, naming taste, or implementation completeness — unless that is literally the task.
+
+   e. **Demand an improvement surface.** A low score must point to the next fix ("caller must edit 3 files", "p95 regressed", "risk owner invisible"). If a score can only say "feels worse," discard that question.
+
+   f. **Gate.** Proceed only if at least two questions can be measured on cheap prototypes. If not, say: "No measurable direction-fitness found; anneal cannot rank this — I can show options, but you must pick."
 2. **Sketch K = 2–3 distinct directions.** Genuinely different approaches, not tweaks of one.
-3. **Prototype each cheaply and MEASURE it.** Build only enough of each to run the measurement; record the actual number per question. Keep prototypes throwaway. Run the measurement — do not estimate, and do not trust a model's self-assessment of which "feels" best.
+3. **Prototype each cheaply and MEASURE it.** Build only enough of each to run the measurement; record the actual number per question. Keep prototypes throwaway. Run the measurement — do not estimate, and do not trust a model's self-assessment of which "feels" best. **Stop rule:** a prototype is done the moment it can produce one number for every fitness question — do not add styling, cleanup, abstractions, tests, or edge cases unless they are needed to produce that number.
 4. **Pick by substance, reading the numbers yourself.** The highest measured fitness wins. Hygiene only breaks a near-tie, and only after the fixable issues on the substance leader are remediated (§2). If your intuitive favorite measured worse, pick the faster/better-measured one anyway — that is the entire value.
 5. **Iterate the winner** with the polish rubric (`rubrics/default.polish.md`) to finish it. Now polish is welcome — the direction is already settled.
 

@@ -89,16 +89,18 @@ It auto-loads in any new Claude Code session; verify it appears in `/help`. Then
 - **No measurable signal ⇒ no real ranking.** For pure-taste targets where even operationalized questions yield no signal, anneal can only lay out options for you to choose; it will not discover the "best" direction, and it must not fake one on polish.
 - **It is a discipline, not a moat.** It encodes a known-good habit so you don't forget it — that's the whole claim. Used where the direction is already obvious, it's just overhead.
 
-## A real run — when measurement overturned intuition
+## A worked example — measurement vs. intuition
 
-This is the case the discipline is *for*, from an actual multi-round run on a developer-config inventory dashboard (the fork: how to show relationships between skills, tools, and roles).
+The fork the discipline is *for* ships, inspectable, in [`eval/non-obvious-fork/`](eval/non-obvious-fork/): the task, the dataset, the *derived* questions (`derivation.md`), the scorecard, and **both** the no-skill baseline and the anneal result — so you can audit the claim instead of taking it on faith.
 
-- **The intuition — and the design note — said "a node-link graph beats a table."** Tempting, and several graph variants got built.
-- **Operationalized fitness:** the goal became five task-questions — *how many clicks to find an orphan? can the single riskiest item be spotted in one view? does it show override-precedence / provide-scope / a cross-tool single point of failure?* Five directions (a refined table + four graph libraries) were each scored against those five questions by two independent critics.
-- **Measurement refuted the intuition.** The refined **table scored 10.0** (perfect); the best **graph scored 6.0** (lowest). The critics independently found *why*: the data is tree-structured (one owner per entity), which a table renders at least as well as a node-link graph. The graph instinct was wrong, and only measurement showed it.
-- **The fixable-DQ corollary, as a real event (not a hypothesis).** An eligibility gate first **disqualified the substantively-best table** on three *fixable* hygiene issues (a stray border accent, em-dashes in prose, six chips that weren't keyboard-operable) and was about to crown the worst-substance graph. Applying the corollary — *remediate the fixable issues, then re-judge* (a one-file, +22/−14 fix) — restored the table as the legitimate winner. Left unchecked, an automated gate hands the win to a worse-but-cleaner option; this is exactly the trap §2's corollary exists to stop.
+The fork: choose a UI direction for a developer-config inventory dashboard showing relationships between skills, tools, roles, scopes, and risk.
 
-Takeaway: cheap measurement, applied at the fork, beat a confident wrong intuition — and the two-oracle rule plus the fixable-DQ corollary were both load-bearing on a real decision, not just on paper.
+- **Intuition says "graph."** "Relationships" suggests a node-link graph; that's the tempting build.
+- **Operationalizing refutes it.** Turning the goal into five one-view *scanning* questions (find an orphan, spot the riskiest item, trace precedence, see scope, identify a cross-tool single point of failure — see `derivation.md`) and scoring each candidate shows a **refined table** answers them at least as well, because the data is mostly tree-shaped (one owner per item). The derivation, not taste, exposes that.
+
+**Honest scope of the claim:** in this case a no-anneal control *also* picked the table. So the value here is **not** "anneal found a winner a capable agent would miss" — it is that the choice becomes an **auditable, repeatable decision record** (derivation + scorecard), made *before* expensive build effort, instead of free-form reasoning.
+
+The `fixable-DQ` corollary (§2 — never let an eligibility gate eliminate the substantively-best candidate over a couple of routine hygiene issues; remediate, then judge) comes from a separate *private* run where exactly that gate error happened and had to be hand-corrected. That run isn't shippable here, so treat it as the rule's origin story, not as a result you can reproduce.
 
 ## Baseline comparison
 
