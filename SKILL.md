@@ -42,7 +42,9 @@ There are two different scorers, and conflating them is the failure mode:
 
 Do this yourself (or with a single helper) — **do not spin up parallel agents or git worktrees.** The whole point is that it is cheap.
 
-1. **Operationalize the fitness.** Do not start by inventing candidate directions. First turn the fuzzy goal into a *direction-neutral measurement sheet*, following this algorithm — it is the make-or-break step:
+1. **Operationalize the fitness.** Do not start by inventing candidate directions. First turn the fuzzy goal into a *direction-neutral measurement sheet*, following this algorithm — it is the make-or-break step.
+
+   **Propose, then confirm.** Run the algorithm yourself to *draft* the measurement sheet, then show the user the 2–5 candidate fitness questions and ask them to confirm, cut, or add — before any prototyping. Don't make the user invent the questions from scratch (that's the hard part they came to you for), and don't silently lock in your own (a model-drafted rubric diverges from human intent ~20–30% of the time). Draft → confirm → measure.
 
    a. **Name the actor and task.** "After this change, what should a user or system be able to DO faster, more correctly, or with less effort?" Use verbs: *find, choose, trace, diagnose, recover, extend, call, compare.* If there is no actor and task, declare pure taste and degrade to "show options, the user picks."
 
